@@ -1,0 +1,115 @@
+name: 'Auth0 Deployment Development'
+
+on:
+  push:
+    paths:
+      - 'infrastructure/**'
+      - 'src/**'
+      - '.github/workflows/deploy_*.yml'
+    branches:
+      - development
+  workflow_dispatch: ~
+
+permissions:
+  contents: read
+
+
+jobs:
+  terraform:
+    name: 'Auth0 Deployment - Development'
+    runs-on: ubuntu-latest
+    env:
+      TF_VAR_client_secret: ${{ secrets.AUTH0_CLIENT_SECRET }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./infrastructure
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        working-directory: .
+        run: yarn install --frozen-lockfile
+
+      - name: Run tests
+        working-directory: .
+        run: yarn test
+
+      - name: Compile Auth0 actions
+        working-directory: .
+        run: node ./scripts/compile-scripts.js
+
+      - name: Terraform Init
+        run: terraform init -var-file=./environments/auth0-dev/dev.tfvars
+
+      - name: Terraform Plan
+        run: terraform plan -var-file=./environments/auth0-dev/dev.tfvars
+
+      - name: Terraform Show Generated Plan
+        run: terraform show ./generated-plan-development.out | tee generated-plan.txt
+
+      - name: Upload plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: tf-plan
+          path: ./infrastructure/generated-plan-development.out
+          retention-days: 1
+
+  apply:
+    name: 'Terraform Approval and Apply'
+    runs-on: ubuntu-latest
+    needs: terraform
+    environment:
+      name: apply-reviewer
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./infrastructure
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download plan
+        uses: actions/download-artifact@v4
+        with:
+          name: tf-plan
+          path: ./infrastructure
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        working-directory: .
+        run: yarn install --frozen-lockfile
+
+      - name: Compile Auth0 actions
+        working-directory: .
+        run: node ./scripts/compile-scripts.js
+
+      - name: Terraform Init
+        run: terraform init -var-file=./environments/auth0-dev/dev.tfvars
+
+      - name: Terraform Apply
+        run: terraform apply -var-file=./environments/auth0-dev/dev.tfvars
