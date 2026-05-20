@@ -62,15 +62,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
-          cache: 'yarn'
+          cache: 'npm'
 
       - name: Install dependencies
         working-directory: .
-        run: yarn install --frozen-lockfile
+        run: npm ci
 
       - name: Run tests
         working-directory: .
-        run: yarn test
+        run: npm test
 
       - name: Compile Auth0 actions
         working-directory: .
@@ -136,11 +136,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
-          cache: 'yarn'
+          cache: 'npm'
 
       - name: Install dependencies
         working-directory: .
-        run: yarn install --frozen-lockfile
+        run: npm ci
 
       - name: Compile Auth0 actions
         working-directory: .
