@@ -3,7 +3,7 @@ friendly_name = "Test Terraform"
 
 # auth0_domain, client_id, client_secret are injected via TF_VAR_* env vars
 # from GitHub Secrets (AUTH0_DOMAIN, AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET).
-auth0_custom_domain = ""
+auth0_custom_domain = "authentication.marius-glodeanu.site"
 
 # TENANT CONFIGURATION
 
@@ -14,18 +14,18 @@ session_cookie        = "persistent"
 
 # CALLBACKS
 
-dummy_app_callbacks           = [""]
-dummy_app_allowed_logout_urls = [""]
+dummy_app_callbacks           = ["test"]
+dummy_app_allowed_logout_urls = ["test"]
 
 #  BRANDING
 
-logo_url    = ""
-favicon_url = ""
+logo_url    = null
+favicon_url = null
 
 # LOG STREAMING
 
-log_stream_url   = ""
-log_stream_token = ""
+log_stream_url   = null
+log_stream_token = null
 
 # ATTACK PROTECTION
 
