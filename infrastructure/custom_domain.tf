@@ -6,6 +6,6 @@ resource "auth0_custom_domain" "custom_domain" {
 
 import {
   to = auth0_custom_domain.custom_domain
-  id = "cd_fSVPbtLNYEo266AT"
+  id = "cd_LgOFdR9uVYv069f3"
 
 }
