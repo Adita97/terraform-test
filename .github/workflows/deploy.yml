@@ -1,11 +1,11 @@
 name: 'Auth0 Deployment Development'
 
 on:
-  pull_request:
+  pushs:
     paths:
       - 'infrastructure/**'
       - 'src/**'
-      - '.github/workflows/deploy_*.yml'
+      - '.github/workflows/deploy*.yml'
     branches:
       - dev
   workflow_dispatch: ~
