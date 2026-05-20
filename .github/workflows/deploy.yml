@@ -1,7 +1,7 @@
 name: 'Auth0 Deployment Development'
 
 on:
-  push:
+  pull_request:
     paths:
       - 'infrastructure/**'
       - 'src/**'
