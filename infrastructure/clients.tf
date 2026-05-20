@@ -22,7 +22,7 @@ resource "auth0_client" "deployment_m2m" {
 # Import the deployment APP here
 import {
   to = auth0_client.deployment_m2m
-  id = "REPLACE WITH M2M Client ID"
+  id = "DaABgv7eDYhvJ8rmFwWqLU11WtDTzPqt"
 
 }
 
