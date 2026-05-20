@@ -1,7 +1,7 @@
 name: 'Auth0 Deployment Development'
 
 on:
-  pushs:
+  push:
     paths:
       - 'infrastructure/**'
       - 'src/**'
