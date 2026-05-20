@@ -1,10 +1,9 @@
 friendly_name = "Test Terraform"
 # custom domain definition
 
-
-auth0_domain        = ""
+# auth0_domain, client_id, client_secret are injected via TF_VAR_* env vars
+# from GitHub Secrets (AUTH0_DOMAIN, AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET).
 auth0_custom_domain = ""
-client_id           = ""
 
 # TENANT CONFIGURATION
 
