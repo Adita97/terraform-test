@@ -26,6 +26,6 @@ resource "auth0_connection" "db-connection" {
 
 import {
   to = auth0_connection.db-connection
-  id = "REPLACE WITH DATABASE ID"
+  id = "con_hSpOGmbptAQuUL1F"
 
 }
