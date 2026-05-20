@@ -34,7 +34,7 @@ suspicious_ip_throttling_shields   = ["admin_notification", "block"]
 suspicious_ip_throttling_allowlist = null
 
 
-brute_force_protection_enabled   = false
+brute_force_protection_enabled   = true
 brute_force_max_attempts         = null
 brute_force_protection_allowlist = null
 brute_force_protection_mode      = null
