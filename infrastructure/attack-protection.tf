@@ -15,6 +15,7 @@ resource "auth0_attack_protection" "main" {
 
   }
 
+
   breached_password_detection {
     enabled                      = var.breached_password_enabled
     method                       = var.breached_password_detection_method
