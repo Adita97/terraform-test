@@ -8,3 +8,5 @@ infrastructure/*.tfstate
 infrastructure/*.tfstate.backup
 infrastructure/.terraform/
 infrastructure/.terraform.lock.hcl
+.github/workflows/deploy.yml/
+

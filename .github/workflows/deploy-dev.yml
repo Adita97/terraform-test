@@ -1,0 +1,176 @@
+name: 'Auth0 Deployment - Dev'
+
+on:
+  push:
+    paths:
+      - 'infrastructure/**'
+      - 'src/**'
+      - '.github/workflows/deploy-dev.yml'
+    branches:
+      - dev
+  workflow_dispatch: ~
+
+permissions:
+  contents: write
+
+concurrency:
+  group: terraform-state-dev
+  cancel-in-progress: false
+
+env:
+  TF_IN_AUTOMATION: 'true'
+  STATE_FILE: terraform-development.tfstate
+  STATE_ENC: terraform-development.tfstate.enc
+  TFVARS: ./environments/auth0-dev/development.tfvars
+
+jobs:
+  terraform:
+    name: 'Auth0 Dev - Plan'
+    runs-on: ubuntu-latest
+    environment: dev
+    env:
+      TF_VAR_auth0_domain:  ${{ secrets.AUTH0_DOMAIN }}
+      TF_VAR_client_id:     ${{ secrets.AUTH0_CLIENT_ID }}
+      TF_VAR_client_secret: ${{ secrets.AUTH0_CLIENT_SECRET }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./infrastructure
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install SOPS
+        uses: nhedger/setup-sops@v2
+
+      - name: Decrypt state (if it exists)
+        env:
+          SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+        run: |
+          if [ -f "$STATE_ENC" ]; then
+            sops -d "$STATE_ENC" > "$STATE_FILE"
+            echo "Decrypted existing state."
+          else
+            echo "No prior encrypted state found — treating as first run."
+          fi
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        working-directory: .
+        run: npm ci
+
+      - name: Run tests
+        working-directory: .
+        run: npm test
+
+      - name: Compile Auth0 actions
+        working-directory: .
+        run: node ./scripts/compile-scripts.js
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan
+        run: terraform plan -var-file="$TFVARS" -out=./generated-plan-development.out
+
+      - name: Terraform Show Generated Plan
+        run: terraform show ./generated-plan-development.out | tee generated-plan.txt
+
+      - name: Upload plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: tf-plan
+          path: ./infrastructure/generated-plan-development.out
+          retention-days: 1
+
+  apply:
+    name: 'Auth0 Dev - Apply'
+    runs-on: ubuntu-latest
+    needs: terraform
+    environment: dev
+    env:
+      TF_VAR_auth0_domain:  ${{ secrets.AUTH0_DOMAIN }}
+      TF_VAR_client_id:     ${{ secrets.AUTH0_CLIENT_ID }}
+      TF_VAR_client_secret: ${{ secrets.AUTH0_CLIENT_SECRET }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: ./infrastructure
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install SOPS
+        uses: nhedger/setup-sops@v2
+
+      - name: Decrypt state (if it exists)
+        env:
+          SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+        run: |
+          if [ -f "$STATE_ENC" ]; then
+            sops -d "$STATE_ENC" > "$STATE_FILE"
+          fi
+
+      - name: Download plan
+        uses: actions/download-artifact@v4
+        with:
+          name: tf-plan
+          path: ./infrastructure
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install dependencies
+        working-directory: .
+        run: npm ci
+
+      - name: Compile Auth0 actions
+        working-directory: .
+        run: node ./scripts/compile-scripts.js
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Apply
+        run: terraform apply ./generated-plan-development.out
+
+      - name: Re-encrypt state
+        env:
+          SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+        run: sops -e "$STATE_FILE" > "$STATE_ENC"
+
+      - name: Commit updated encrypted state
+        working-directory: .
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "infrastructure/$STATE_ENC"
+          if git diff --cached --quiet; then
+            echo "No state changes to commit."
+          else
+            git commit -m "chore(terraform): update encrypted dev state [skip ci]"
+            git push origin HEAD:"${GITHUB_REF_NAME}"
+          fi
