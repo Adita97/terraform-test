@@ -12,6 +12,7 @@ resource "auth0_attack_protection" "main" {
     enabled   = var.suspicious_ip_throttling_enabled
     shields   = var.suspicious_ip_throttling_shields
     allowlist = var.suspicious_ip_throttling_allowlist
+
   }
 
   breached_password_detection {
