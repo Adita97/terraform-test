@@ -5,7 +5,7 @@ resource "auth0_connection" "db-connection" {
 
   options {
     password_policy                      = "good"
-    disable_signup                       = false
+    disable_signup                       = true
     disable_self_service_change_password = false
     requires_username                    = false
 
