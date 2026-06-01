@@ -116,3 +116,10 @@ variable "breached_password_detection_shields" {
 variable "breached_password_detection_admin_notification_frequency" {
   type = list(string)
 }
+
+variable "SMTP_USER" {
+  type = string
+}
+variable "SMTP_PASS" {
+  type = string
+}
