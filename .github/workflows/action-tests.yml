@@ -1,0 +1,22 @@
+name: Auth0 Action Tests
+
+on:
+  pull_request:
+jobs:
+  actions_tests:
+    strategy:
+      matrix:
+        node-version: [ 24 ]
+    name: Run Auth0 Action Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - run: npm ci
+      - run: npm test

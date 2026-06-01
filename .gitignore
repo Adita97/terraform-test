@@ -1,0 +1,12 @@
+/node_modules/
+/.idea/
+/keys.txt
+
+# Terraform — never commit plaintext state (contains secrets).
+# Encrypted state (*.tfstate.enc) is committed via the workflow.
+infrastructure/*.tfstate
+infrastructure/*.tfstate.backup
+infrastructure/.terraform/
+infrastructure/.terraform.lock.hcl
+.github/workflows/deploy.yml/
+

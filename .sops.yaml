@@ -1,0 +1,3 @@
+creation_rules:
+  - path_regex: infrastructure/.*\.tfstate$
+    age: age1c2sunk9uzxugupe8drujj0jhmnrzjtws0fcz342x4fgtcgf4s9ksgqewry
