@@ -3,7 +3,7 @@ resource "auth0_email_provider" "smtp_microsoft" {
   name                 = "smtp"
   enabled              = true
   credentials {
-    smtp_host = ""
+    smtp_host = "testhost.example.com"
     smtp_port = 198
     smtp_user = var.SMTP_USER
     smtp_pass = var.SMTP_PASS
